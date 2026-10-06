@@ -51,7 +51,7 @@ function verbQuestion(){
  const bank=words.filter(x=>x.pos==='verb'&&(/[うくぐすつぬぶむる]$/.test(x.word))),w=rpick(bank),kind=verbKind==='all'?rpick(VERB_KINDS):VERB_KINDS.find(x=>x[1]===verbKind),f=StudyCore.verbForms(w.word,w.group);
  return{q:`「${w.word}」(${w.meaning})의 ${kind[0]}은?`,a:f[kind[1]],cat:`문법 · 동사 활용 · ${kind[0]}`,choices:choicesFor(f[kind[1]],Object.values(f)),why:`${w.word} → ${f[kind[1]]}. ${w.group==='v1'?'2그룹(1단)':w.group==='irregular'?'3그룹(불규칙)':'1그룹(5단)'} 동사입니다.${w.word==='行く'?' 行く의 て형·た형은 예외로 行って·行った입니다.':''}`};
 }
-let practiceVerb='会う',practiceTarget='all';
+let practiceVerb='mixed',practiceTarget='all';
 function verbSentenceQuestion(){
  const v=practiceVerb==='mixed'?rpick(VerbPractice.verbs):VerbPractice.verbs.find(v=>v.word===practiceVerb),cells=VerbPractice.cells(v),cell=rpick(cells.filter(c=>practiceTarget==='all'||c.target===practiceTarget));
  const future=cell.tense==='future',present=cell.tense==='present';
@@ -63,7 +63,7 @@ function verbSentenceQuestion(){
 function renderVerbComparison(){
  const panel=$('#verbPracticePanel');panel.hidden=!(studyGroup==='grammar'&&studySub==='verb'&&verbKind==='sentence');if(panel.hidden)return;
  const v=VerbPractice.verbs.find(v=>v.word===(practiceVerb==='mixed'?jq?.practiceWord:practiceVerb))||VerbPractice.verbs[0],cells=VerbPractice.cells(v);
- $('#verbCompareContent').innerHTML=`<p class="verb-compare-title">${studyHTML(v.word,true)} · ${v.plainKo[0]} / ${v.nounKo} 꾸미기</p><div class="verb-compare-wrap"><table class="verb-compare"><thead><tr><th scope="col">의미</th>${VerbPractice.targets.map(t=>`<th scope="col">${t[1]}</th>`).join('')}</tr></thead><tbody>${VerbPractice.rows.map(([tense,label])=>`<tr><th scope="row">${label}</th>${cells.filter(c=>c.tense===tense).map(c=>`<td>${studyHTML(c.ja,true)}<small>${esc(c.ko)}</small></td>`).join('')}</tr>`).join('')}</tbody></table></div><p class="verb-compare-note">회화에서는 ～ている를 ～てる로 줄이기도 해요. ～ている는 동사와 문맥에 따라 진행·상태·반복을 나타냅니다. 동사가 형용사로 바뀌는 것이 아니라 동사절이 명사를 꾸미는 역할이에요.</p>`;
+ $('#verbCompareContent').innerHTML=`<p class="verb-compare-title">${studyHTML(v.word,true)} · ${v.plainKo[0]} / ${v.nounKo} 꾸미기</p><div class="verb-compare-wrap"><table class="verb-compare"><thead><tr><th scope="col">의미</th>${VerbPractice.targets.map(t=>`<th scope="col">${t[1]}</th>`).join('')}</tr></thead><tbody>${VerbPractice.rows.map(([tense,label])=>`<tr><th scope="row">${label}</th>${cells.filter(c=>c.tense===tense).length?cells.filter(c=>c.tense===tense).map(c=>`<td>${studyHTML(c.ja,true)}<small>${esc(c.ko)}</small></td>`).join(''):'<td colspan="3">この動詞の ～ている は今回の練習対象外です。<small>이 동사는 이 문맥에서 진행·상태 연습을 생략해요.</small></td>'}</tr>`).join('')}</tbody></table></div><p class="verb-compare-note">회화에서는 ～ている를 ～てる로 줄이기도 해요. ～ている는 동사와 문맥에 따라 진행·상태·반복을 나타냅니다. 동사가 형용사로 바뀌는 것이 아니라 동사절이 명사를 꾸미는 역할이에요.</p>`;
 }
 function adjectiveQuestion(type){
  const w=rpick(words.filter(x=>x.pos===type)),forms=type==='i'?iForms(w.word):naForms(w.word),kinds=type==='i'?[['부정형','neg'],['과거형','past'],['과거 부정형','pastneg'],['て형','te']]:[['부정형','neg'],['과거형','past'],['과거 부정형','pastneg'],['명사 앞 형태','attr'],['부사형','adv']],kind=rpick(kinds);
@@ -112,7 +112,7 @@ $('#jpFurigana').checked=showFurigana;$('#jpAutoNext').checked=autoNext;
 $('#jpFurigana').onchange=e=>{showFurigana=e.target.checked;localStorage.jpFurigana=showFurigana?'on':'off';paintQuestion();renderVerbComparison();if(locked)$('#jpA').innerHTML=`<b>${jq.picked===jq.a?'정답! +10점':'오답 · 정답: '+studyHTML(jq.a,true)}</b><div class="quiz-explain">${studyHTML(jq.why,true)}</div>`;};
 $('#jpAutoNext').onchange=e=>{autoNext=e.target.checked;localStorage.jpAutoNext=autoNext?'on':'off';if(!autoNext&&qt){clearTimeout(qt);qt=null;}};
 $('#wordMode').onchange=e=>{wordMode=e.target.value;qnext();};$('#verbKind').onchange=e=>{verbKind=e.target.value;qnext();};
-$('#practiceVerb').innerHTML=VerbPractice.verbs.map(v=>`<option value="${esc(v.word)}">${esc(v.word)} (${esc(v.reading)})</option>`).join('')+'<option value="mixed">여러 동사 섞기</option>';
+$('#practiceVerb').innerHTML='<option value="mixed">여러 동사 섞기</option>'+VerbPractice.verbs.map(v=>`<option value="${esc(v.word)}">${esc(v.word)} (${esc(v.reading)})</option>`).join('');
 $('#practiceVerb').onchange=e=>{practiceVerb=e.target.value;qnext();};$('#practiceTarget').onchange=e=>{practiceTarget=e.target.value;qnext();};
 $('#jpNext').onclick=qnext;
 $('#vocabCount').textContent=words.length+'개';

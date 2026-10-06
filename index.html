@@ -207,6 +207,6 @@ $$('[data-news]').forEach(b=>b.onclick=()=>{$$('[data-news]').forEach(x=>x.class
 async function refreshAll(){const b=$('#refreshAll');if(b.disabled)return;b.disabled=true;b.textContent='업데이트 중…';$('#refreshStatus').textContent='시세·지수·뉴스를 갱신 중';const r=await Promise.allSettled([loadMarket(),loadNews()]);b.disabled=false;b.textContent='전체 업데이트';const fail=r.filter(x=>x.status==='rejected').length;$('#refreshStatus').textContent=fail?`${2-fail}/2 업데이트 완료 · 일부 연결 실패`:'전체 업데이트 완료';toast(fail?'일부 연결 실패':'전체 업데이트 완료')}
 $('#refreshAll').onclick=refreshAll;renderAllAsset();snapshotAsset();tab('japanese');setInterval(()=>$('#assets').classList.contains('active')&&loadMarket().catch(()=>{}),300000);
 </script>
-<script src="data/vocabulary.js"></script><script src="data/grammar.js"></script><script src="study-core.js"></script><script src="verb-practice.js"></script><script src="study.js"></script>
+<script src="data/vocabulary.js"></script><script src="data/grammar.js"></script><script src="study-core.js"></script><script src="data/verb-contexts.js"></script><script src="verb-practice.js"></script><script src="study.js"></script>
 <p class="wrap source-note">단어 자료: <a href="https://github.com/evanclan/OpenJLPT" target="_blank" rel="noopener">OpenJLPT</a> · EDRDG/JMdict · Jonathan Waller · <a href="data/NOTICE.md">출처·변경사항</a> · <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener">CC BY-SA 4.0</a><br>N5 분류는 학습용 참고 기준입니다. 읽는 법 문제에서는 후리가나를 답을 고른 뒤 표시합니다.</p>
 </body></html>

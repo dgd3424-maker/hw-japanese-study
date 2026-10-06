@@ -16,7 +16,7 @@ function setup(){
  const section=html.slice(start,html.indexOf('// PORTFOLIO',start)>0?html.indexOf('// PORTFOLIO',start):end);
  // Include only the quiz declarations, not unrelated portfolio code.
  vm.runInContext(section.slice(0,section.indexOf('qnext();')+9),c);
- for(const p of ['data/vocabulary.js','data/grammar.js','verb-practice.js','study.js'])vm.runInContext(fs.readFileSync(p,'utf8'),c);
+ for(const p of ['data/vocabulary.js','data/grammar.js','data/verb-contexts.js','verb-practice.js','study.js'])vm.runInContext(fs.readFileSync(p,'utf8'),c);
  return c;
 }
 test('every category generates four distinct choices with exactly one answer',()=>{
@@ -53,8 +53,17 @@ test('context practice uses same verb and separates sentence endings from modifi
  const seen=new Set();for(let i=0;i<200;i++)seen.add(vm.runInContext('nextStudyQuestion().practiceWord',c));assert.ok(seen.size>1);
 });
 test('comparison has all twelve meanings including progressive and shared future forms',()=>{
- const c=setup();const cells=vm.runInContext("VerbPractice.cells(VerbPractice.verbs[0])",c);
+ const c=setup();const cells=vm.runInContext("VerbPractice.cells(VerbPractice.verbs.find(v=>v.word==='会う'))",c);
  assert.equal(cells.length,12);assert.equal(cells.find(x=>x.ko==='선생님을 만나고 있습니다').ja,'先生に会っています');assert.equal(cells.find(x=>x.ko==='만나고 있는 선생님').ja,'会っている先生');assert.equal(cells.find(x=>x.ko==='선생님을 만날 거야').ja,'先生に会う');
  const coming=vm.runInContext("VerbPractice.cells(VerbPractice.verbs.find(v=>v.word==='来る'))",c);
  assert.equal(coming.find(x=>x.target==='polite'&&x.tense==='ongoing').reading,'きています');
+});
+
+test('all vocabulary verbs have valid contextual questions and mixed mode is default',()=>{
+ const c=setup();assert.equal(vm.runInContext('practiceVerb',c),'mixed');
+ const names=vm.runInContext("N5_WORDS.filter(v=>v.pos==='verb').map(v=>v.word)",c);
+ const contexts=vm.runInContext('VerbPractice.verbs',c);assert.equal(contexts.length,names.length);
+ for(const v of contexts){assert.ok(names.includes(v.word));for(const cell of vm.runInContext(`VerbPractice.cells(VerbPractice.verbs.find(v=>v.word===${JSON.stringify(v.word)}))`,c)){assert.ok(cell.ko&&!cell.ko.includes('undefined'));assert.ok(cell.reading);assert.ok(!cell.ja.includes('undefined'));}
+ for(let i=0;i<12;i++){const q=vm.runInContext(`practiceVerb=${JSON.stringify(v.word)};practiceTarget='all';verbSentenceQuestion()`,c);assert.equal(q.practiceWord,v.word);assert.equal(q.choices.length,4);assert.equal(new Set(q.choices).size,4);assert.ok(q.choices.includes(q.a));}}
+ assert.equal(vm.runInContext("VerbPractice.cells(VerbPractice.verbs.find(v=>v.word==='ある')).filter(c=>c.tense==='ongoing').length",c),0);
 });

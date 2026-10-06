@@ -16,7 +16,7 @@ function setup(){
  const section=html.slice(start,html.indexOf('// PORTFOLIO',start)>0?html.indexOf('// PORTFOLIO',start):end);
  // Include only the quiz declarations, not unrelated portfolio code.
  vm.runInContext(section.slice(0,section.indexOf('qnext();')+9),c);
- for(const p of ['data/vocabulary.js','data/grammar.js','study.js'])vm.runInContext(fs.readFileSync(p,'utf8'),c);
+ for(const p of ['data/vocabulary.js','data/grammar.js','verb-practice.js','study.js'])vm.runInContext(fs.readFileSync(p,'utf8'),c);
  return c;
 }
 test('every category generates four distinct choices with exactly one answer',()=>{
@@ -39,4 +39,22 @@ test('reading questions hide furigana until answered, toggle does not replace qu
 test('correct answer updates existing stats and manual mode leaves explanation available',()=>{
  const c=setup();vm.runInContext("autoNext=false;qnext();pickChoice({dataset:{choice:jq.a}})",c);
  assert.equal(vm.runInContext('js.correct',c),1);assert.equal(vm.runInContext('js.total',c),1);assert.equal(vm.runInContext('js.score',c),10);assert.equal(vm.runInContext('qt',c),null);assert.ok(vm.runInContext('locked',c));
+});
+
+test('context practice uses same verb and separates sentence endings from modifiers',()=>{
+ const c=setup();vm.runInContext("studyGroup='grammar';studySub='verb';verbKind='sentence';practiceVerb='会う'",c);
+ for(const target of ['plain','polite','modifier'])for(let i=0;i<50;i++){
+  const q=vm.runInContext(`practiceTarget='${target}';nextStudyQuestion()`,c);
+  assert.equal(q.practiceWord,'会う');assert.equal(q.choices.length,4);assert.equal(new Set(q.choices).size,4);assert.ok(q.choices.includes(q.a));
+  if(target==='modifier'){assert.ok(q.a.endsWith('先生'));assert.ok(!q.a.startsWith('先生に'));assert.ok(!q.a.includes('ます'));}
+  else assert.ok(q.a.startsWith('先生に'));
+ }
+ vm.runInContext("practiceTarget='all';practiceVerb='mixed'",c);
+ const seen=new Set();for(let i=0;i<200;i++)seen.add(vm.runInContext('nextStudyQuestion().practiceWord',c));assert.ok(seen.size>1);
+});
+test('comparison has all twelve meanings including progressive and shared future forms',()=>{
+ const c=setup();const cells=vm.runInContext("VerbPractice.cells(VerbPractice.verbs[0])",c);
+ assert.equal(cells.length,12);assert.equal(cells.find(x=>x.ko==='선생님을 만나고 있습니다').ja,'先生に会っています');assert.equal(cells.find(x=>x.ko==='만나고 있는 선생님').ja,'会っている先生');assert.equal(cells.find(x=>x.ko==='선생님을 만날 거야').ja,'先生に会う');
+ const coming=vm.runInContext("VerbPractice.cells(VerbPractice.verbs.find(v=>v.word==='来る'))",c);
+ assert.equal(coming.find(x=>x.target==='polite'&&x.tense==='ongoing').reading,'きています');
 });

@@ -16,7 +16,7 @@ function setup(){
  const section=html.slice(start,html.indexOf('// PORTFOLIO',start)>0?html.indexOf('// PORTFOLIO',start):end);
  // Include only the quiz declarations, not unrelated portfolio code.
  vm.runInContext(section.slice(0,section.indexOf('qnext();')+9),c);
- for(const p of ['data/vocabulary.js','data/grammar.js','data/verb-contexts.js','verb-practice.js','study.js'])vm.runInContext(fs.readFileSync(p,'utf8'),c);
+ for(const p of ['data/vocabulary.js','data/vocabulary-curated.js','data/grammar.js','data/verb-contexts.js','verb-practice.js','study.js'])vm.runInContext(fs.readFileSync(p,'utf8'),c);
  return c;
 }
 test('every category generates four distinct choices with exactly one answer',()=>{

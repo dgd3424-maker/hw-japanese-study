@@ -3,14 +3,16 @@ const POS_NAMES={noun:'명사',verb:'동사',i:'이형용사',na:'나형용사',
 const STUDY_GROUPS={
  all:{label:'전체',subs:[]},
  numbers:{label:'숫자·시간',subs:[['all','전체'],['number','숫자'],['date','날짜·요일']]},
- words:{label:'단어',subs:[['all','전체'],...Object.entries(POS_NAMES) ]},
+ words:{label:'단어',subs:[['all','전체'],['curated','보강 단어'],...Object.entries(POS_NAMES) ]},
  grammar:{label:'문법',subs:[['all','전체'],['basic','기본문장'],['particle','조사'],['i','이형용사 활용'],['na','나형용사 활용'],['verb','동사 활용'],['expression','문법 표현'],['connection','문장 연결']]},
  sentences:{label:'문장',subs:[['all','전체'],['meaning','뜻 고르기'],['blank','빈칸 채우기']]}
 };
 let studyGroup='all',studySub='all',wordMode='meaning',verbKind='all';
 let showFurigana=localStorage.jpFurigana!=='off',autoNext=localStorage.jpAutoNext!=='off';
 const originalMakeQ=makeQ;
-const words=[...N5_WORDS];
+// Curated pack (data/vocabulary-curated.js) sits on top of the imported N5 list.
+const curatedWords=typeof CURATED_WORDS!=='undefined'?CURATED_WORDS:[];
+const words=[...N5_WORDS,...curatedWords];
 // Keep existing app words that are not represented in the imported list.
 const legacy=[...VOC.map(x=>({reading:x[1],meaning:x[0],pos:'noun'})),...NA.map(x=>({reading:x[0],meaning:x[1],pos:'na'})),...IA.map(x=>({reading:x[0],meaning:x[1],pos:'i'}))];
 legacy.forEach((w,i)=>{if(!words.some(x=>x.reading===w.reading&&x.pos===w.pos))words.push({...w,word:w.reading,id:'legacy-'+i,level:'기초 보충',source:'original'});});
@@ -38,7 +40,7 @@ function studyHTML(text,reveal=false){
 }
 function choicesFor(answer,pool){const others=shuffle(uniq(pool).filter(x=>x!==answer)).slice(0,3);if(others.length<3)throw Error('Insufficient unique choices');return shuffle([answer,...others]);}
 function wordQuestion(pos='all'){
- const bank=pos==='all'?words:words.filter(w=>w.pos===pos),w=rpick(bank),same=words.filter(x=>x.pos===w.pos&&x.id!==w.id);
+ const bank=pos==='curated'?words.filter(w=>w.source==='curated'):pos==='all'?words:words.filter(w=>w.pos===pos),w=rpick(bank),same=words.filter(x=>x.pos===w.pos&&x.id!==w.id);
  const readingTest=wordMode==='reading'&&/[一-龯々]/.test(w.word);
  if(readingTest)return{q:`「${w.word}」の読み方は？（읽는 법）`,a:w.reading,cat:`단어 · ${POS_NAMES[w.pos]} · 읽기`,choices:choicesFor(w.reading,same.map(x=>x.reading)),why:`${w.word}는 ${w.reading}로 읽고, 뜻은 '${w.meaning}'입니다.`,readingTest:true};
  if(wordMode==='reading'&&!/[一-龯々]/.test(w.word))return{q:`「${w.word}」의 뜻은? (가나 표기 단어)`,a:w.meaning,cat:`단어 · ${POS_NAMES[w.pos]} · 뜻`,choices:choicesFor(w.meaning,same.map(x=>x.meaning)),why:`${w.word} · ${w.meaning}`};

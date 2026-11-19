@@ -5,3 +5,5 @@ Vocabulary spellings, readings, level tags and part-of-speech metadata were adap
 The adapted vocabulary dataset is distributed under [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/). Changes: added Korean learning glosses, simplified part-of-speech groups, corrected selected everyday spellings and source gloss errors. Upstream example sentences are not included. N5 labels are approximate learning classifications, not an official JLPT syllabus.
 
 Original app vocabulary is retained as supplementary vocabulary. Uploaded worksheets were used to identify learning topics; worksheet scans and handwritten answers are not published. New exercise examples and explanations were written for the app.
+
+`data/vocabulary-curated.js` (everyday conversation and accounting/office vocabulary) is original content written for this app. It is not part of the adapted OpenJLPT dataset and carries no upstream data.
